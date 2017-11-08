@@ -34,15 +34,19 @@ class UserController extends AbstractActionController
 
     public function indexAction()
     {
-        $request = $this->getRequest();
         $response = $this->getResponse();
-        var_dump($request->getQuery()['a']);
         $response->setContent("user home here");
         return $response;
     }
 
+    /**
+     * @return array|\Zend\Http\Response
+     */
     public function loginAction()
     {
+        /**
+         * @var \Zend\Http\Request $request
+         * */
         $form = new UserForm();
         $form->get("submit")->setValue("REG");
 
