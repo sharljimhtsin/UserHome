@@ -8,7 +8,8 @@
 
 namespace Application\Model;
 
-use Zend\Db\TableGateway\TableGateway;
+use Zend\Db\TableGateway\TableGatewayInterface;
+use Zend\Db\Exception\RuntimeException;
 
 class UserTable
 {
@@ -18,7 +19,7 @@ class UserTable
      * UserTable constructor.
      * @param $tableGateway
      */
-    public function __construct(TableGateway $tableGateway)
+    public function __construct(TableGatewayInterface $tableGateway)
     {
         $this->tableGateway = $tableGateway;
     }
@@ -39,38 +40,52 @@ class UserTable
         $this->tableGateway = $tableGateway;
     }
 
+    public function fetchAll()
+    {
+        return $this->tableGateway->select();
+    }
+
     public function getUser($id)
     {
         $id = (int)$id;
-        $rowSet = $this->tableGateway->select(array('id' => $id));
+        $rowSet = $this->tableGateway->select(['id' => $id]);
         $row = $rowSet->current();
         if (!$row) {
-            throw new \Exception("Could not find row $id");
+            throw new RuntimeException(sprintf(
+                'Could not find row with identifier %d',
+                $id
+            ));
         }
+
         return $row;
     }
 
     public function deleteUser($id)
     {
-        $this->tableGateway->delete(array('id' => (int)$id));
+        $this->tableGateway->delete(['id' => (int)$id]);
     }
 
-    public function saveAlbum(User $user)
+    public function saveUser(User $user)
     {
-        $data = array(
+        $data = [
             'username' => $user->username,
             'telephone' => $user->telephone,
-        );
+        ];
 
         $id = (int)$user->id;
-        if ($id == 0) {
+
+        if ($id === 0) {
             $this->tableGateway->insert($data);
-        } else {
-            if ($this->getUser($id)) {
-                $this->tableGateway->update($data, array('id' => $id));
-            } else {
-                throw new \Exception('User id does not exist');
-            }
+            return;
         }
+
+        if (!$this->getUser($id)) {
+            throw new RuntimeException(sprintf(
+                'Cannot update album with identifier %d; does not exist',
+                $id
+            ));
+        }
+
+        $this->tableGateway->update($data, ['id' => $id]);
     }
 }

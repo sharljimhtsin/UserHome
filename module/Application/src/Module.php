@@ -7,14 +7,14 @@
 
 namespace Application;
 
-use Application\Model\User;
-use Application\Model\UserTable;
+use Zend\Db\Adapter\AdapterInterface;
 use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
+use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ServiceManager\ServiceManager;
 
 
-class Module
+class Module implements ConfigProviderInterface
 {
     const VERSION = '3.0.3-dev';
 
@@ -25,21 +25,33 @@ class Module
 
     public function getServiceConfig()
     {
-        return array(
-            'factories' => array(
-                'Application\Model\UserTable' => function (ServiceManager $sm) {
-                    $tableGateway = $sm->get('UserTableGateway');
-                    $table = new UserTable($tableGateway);
-                    return $table;
+        return [
+            'factories' => [
+                Model\UserTable::class => function (ServiceManager $container) {
+                    $tableGateway = $container->get(Model\UserTableGateway::class);
+                    return new Model\UserTable($tableGateway);
                 },
-                'UserTableGateway' => function (ServiceManager $sm) {
-                    $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                Model\UserTableGateway::class => function (ServiceManager $container) {
+                    $dbAdapter = $container->get(AdapterInterface::class);
                     $resultSetPrototype = new ResultSet();
-                    $resultSetPrototype->setArrayObjectPrototype(new User());
+                    $resultSetPrototype->setArrayObjectPrototype(new Model\User());
                     return new TableGateway('user', $dbAdapter, null, $resultSetPrototype);
                 },
-            ),
-        );
+            ],
+        ];
+    }
+
+    public function getControllerConfig()
+    {
+        return [
+            'factories' => [
+                Controller\IndexController::class => function (ServiceManager $container) {
+                    return new Controller\IndexController(
+                        $container->get(Model\UserTable::class)
+                    );
+                },
+            ],
+        ];
     }
 
 }

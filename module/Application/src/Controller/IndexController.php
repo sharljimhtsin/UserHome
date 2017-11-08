@@ -7,11 +7,23 @@
 
 namespace Application\Controller;
 
+use Application\Model\UserTable;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 
 class IndexController extends AbstractActionController
 {
+    private $table;
+
+    /**
+     * IndexController constructor.
+     * @param $table
+     */
+    public function __construct(UserTable $table)
+    {
+        $this->table = $table;
+    }
+
     public function indexAction()
     {
         $response = $this->getResponse();
@@ -23,6 +35,8 @@ class IndexController extends AbstractActionController
     {
         $view = new ViewModel();
         $view->setTerminal(true);
+        $data = $this->table->fetchAll();
+        var_dump($data);
         return $view;
     }
 }
