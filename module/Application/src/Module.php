@@ -37,6 +37,16 @@ class Module implements ConfigProviderInterface
                     $resultSetPrototype->setArrayObjectPrototype(new Model\User());
                     return new TableGateway('user', $dbAdapter, null, $resultSetPrototype);
                 },
+                Model\UserMappingTable::class => function (ServiceManager $container) {
+                    $tableGateway = $container->get(Model\UserMappingTableGateway::class);
+                    return new Model\UserMappingTable($tableGateway);
+                },
+                Model\UserMappingTableGateway::class => function (ServiceManager $container) {
+                    $dbAdapter = $container->get(AdapterInterface::class);
+                    $resultSetPrototype = new ResultSet();
+                    $resultSetPrototype->setArrayObjectPrototype(new Model\UserMapping());
+                    return new TableGateway('userMapping', $dbAdapter, null, $resultSetPrototype);
+                },
             ],
         ];
     }
@@ -48,6 +58,11 @@ class Module implements ConfigProviderInterface
                 Controller\IndexController::class => function (ServiceManager $container) {
                     return new Controller\IndexController(
                         $container->get(Model\UserTable::class)
+                    );
+                },
+                Controller\UserController::class => function (ServiceManager $container) {
+                    return new Controller\UserController(
+                        $container->get(Model\UserTable::class), $container->get(Model\UserMappingTable::class)
                     );
                 },
             ],

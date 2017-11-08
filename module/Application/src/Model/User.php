@@ -21,8 +21,41 @@ use Zend\Validator\StringLength;
 class User implements InputFilterAwareInterface
 {
     public $id;
+    public $uid;
     public $username;
+    public $password;
+    public $nickname;
+    public $avatar;
+    public $sex;
+    public $signature;
     public $telephone;
+    public $email;
+    public $status;
+    public $channel;
+    public $channelId;
+    public $ip;
+    public $lastLogin;
+    public $createTime;
+
+    public function exchangeArray($data)
+    {
+        $this->id = (!empty($data['id'])) ? $data['id'] : null;
+        $this->uid = (!empty($data['uid'])) ? $data['uid'] : null;
+        $this->username = (!empty($data['username'])) ? $data['username'] : null;
+        $this->password = (!empty($data['password'])) ? $data['password'] : null;
+        $this->nickname = (!empty($data['nickname'])) ? $data['nickname'] : null;
+        $this->avatar = (!empty($data['avatar'])) ? $data['avatar'] : null;
+        $this->sex = (!empty($data['sex'])) ? $data['sex'] : null;
+        $this->signature = (!empty($data['signature'])) ? $data['signature'] : null;
+        $this->telephone = (!empty($data['telephone'])) ? $data['telephone'] : null;
+        $this->email = (!empty($data['email'])) ? $data['email'] : null;
+        $this->status = (!empty($data['status'])) ? $data['status'] : null;
+        $this->channel = (!empty($data['channel'])) ? $data['channel'] : null;
+        $this->channelId = (!empty($data['channelId'])) ? $data['channelId'] : null;
+        $this->ip = (!empty($data['ip'])) ? $data['ip'] : null;
+        $this->lastLogin = (!empty($data['lastLogin'])) ? $data['lastLogin'] : null;
+        $this->createTime = (!empty($data['createTime'])) ? $data['createTime'] : null;
+    }
 
     private $inputFilter;
 
@@ -97,12 +130,5 @@ class User implements InputFilterAwareInterface
 
         $this->inputFilter = $inputFilter;
         return $this->inputFilter;
-    }
-
-    public function exchangeArray($data)
-    {
-        $this->id = (!empty($data['id'])) ? $data['id'] : null;
-        $this->username = (!empty($data['username'])) ? $data['username'] : null;
-        $this->telephone = (!empty($data['telephone'])) ? $data['telephone'] : null;
     }
 }
