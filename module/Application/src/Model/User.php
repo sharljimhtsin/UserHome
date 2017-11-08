@@ -84,7 +84,7 @@ class User implements InputFilterAwareInterface
 
         $inputFilter->add([
             'name' => 'id',
-            'required' => true,
+            'required' => false,
             'filters' => [
                 ['name' => ToInt::class],
             ],

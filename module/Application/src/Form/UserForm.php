@@ -48,6 +48,6 @@ class UserForm extends Form
             ],
         ]);
 
-        $this->setAttribute("method", "GET");
+        $this->setAttribute("method", "POST");
     }
 }
