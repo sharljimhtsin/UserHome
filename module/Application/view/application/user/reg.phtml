@@ -15,3 +15,4 @@ echo $this->formRow($form->get('password'));
 echo $this->formRow($form->get('passwordAgain'));
 echo $this->formSubmit($form->get('submit'));
 echo $this->form()->closeTag();
+echo isset($error) ? $error : "";

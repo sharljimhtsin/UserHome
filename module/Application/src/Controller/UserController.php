@@ -75,8 +75,15 @@ class UserController extends AbstractActionController
         }
 
         $user->exchangeArray($form->getData());
-        $userObj = $this->userTable->checkUser($form->get('username')->getValue(), $form->get('password')->getValue());
-        var_dump($userObj);
+        try {
+            $userObj = $this->userTable->checkUser($form->get('username')->getValue(), $form->get('password')->getValue());
+        } catch (\Exception $e) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/login");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "username or password error");
+            return $viewModel;
+        }
         return $this->redirect()->toRoute('user');
     }
 
@@ -96,6 +103,15 @@ class UserController extends AbstractActionController
             $viewModel = new ViewModel();
             $viewModel->setTemplate("application/user/reg");
             $viewModel->setVariable("form", $form);
+            return $viewModel;
+        }
+
+        $isExist = $this->userTable->isExist("username", $form->get("username")->getValue());
+        if ($isExist) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/reg");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "user already exist");
             return $viewModel;
         }
 

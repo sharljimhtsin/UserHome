@@ -8,8 +8,8 @@
 
 namespace Application\Model;
 
-use Zend\Db\TableGateway\TableGatewayInterface;
 use Zend\Db\Exception\RuntimeException;
+use Zend\Db\TableGateway\TableGatewayInterface;
 
 class UserTable
 {
@@ -62,7 +62,7 @@ class UserTable
 
     public function checkUser($username, $password)
     {
-        $rowSet = $this->tableGateway->select(['username' => $username, 'password' => $password]);
+        $rowSet = $this->tableGateway->select(['username' => $username, 'password' => \md5($password)]);
         $row = $rowSet->current();
         if (!$row) {
             throw new RuntimeException(sprintf(
@@ -72,6 +72,16 @@ class UserTable
         }
 
         return $row;
+    }
+
+    public function isExist($name, $value)
+    {
+        $rowSet = $this->tableGateway->select([$name => $value]);
+        $row = $rowSet->current();
+        if (!$row) {
+            return false;
+        }
+        return true;
     }
 
     public function deleteUser($id)
@@ -84,7 +94,7 @@ class UserTable
         $data = [
             'uid' => $user->uid,
             'username' => $user->username,
-            'password' => $user->password,
+            'password' => \md5("$user->password"),
             'nickname' => $user->nickname,
             'avatar' => $user->avatar,
             'sex' => $user->sex,
