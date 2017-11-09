@@ -126,6 +126,7 @@ class UserController extends AbstractActionController
         /**
          * @var \Zend\Http\Request $request
          * @var  \Zend\Http\Response $response
+         * @var \Application\Model\UserMapping $mappingObj
          **/
         $request = $this->getRequest();
         $response = $this->getResponse();
@@ -146,7 +147,7 @@ class UserController extends AbstractActionController
             $response->setContent("your uid is " . $uid);
             return $response;
         }
-        $response->setContent("your uid is " . $mappingObj["uid"]);
+        $response->setContent("your uid is " . $mappingObj->uid);
         return $response;
     }
 
