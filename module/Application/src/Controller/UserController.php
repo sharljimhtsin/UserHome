@@ -14,6 +14,8 @@ use Application\Model\User;
 use Application\Model\UserMapping;
 use Application\Model\UserMappingTable;
 use Application\Model\UserTable;
+use Application\Model\UserToken;
+use Application\Model\UserTokenTable;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 
@@ -23,15 +25,19 @@ class UserController extends AbstractActionController
 
     private $userMappingTable;
 
+    private $userTokenTable;
+
     /**
      * UserController constructor.
      * @param $userTable
      * @param $userMappingTable
+     * @param $userTokenTable
      */
-    public function __construct(UserTable $userTable, UserMappingTable $userMappingTable)
+    public function __construct(UserTable $userTable, UserMappingTable $userMappingTable, UserTokenTable $userTokenTable)
     {
         $this->userTable = $userTable;
         $this->userMappingTable = $userMappingTable;
+        $this->userTokenTable = $userTokenTable;
     }
 
     public function indexAction()
@@ -136,6 +142,7 @@ class UserController extends AbstractActionController
             return $response;
         }
         $mappingObj = $this->userMappingTable->fetchOne($deviceId, UserMapping::CHANNEL_TEMP);
+        $theUid = $mappingObj->uid;
         if (is_null($mappingObj)) {
             $uid = "XXXXXXXXXX";
             $user = new User();
@@ -144,10 +151,13 @@ class UserController extends AbstractActionController
             $userMapping = new UserMapping();
             $userMapping->exchangeArray(array("channelId" => UserMapping::CHANNEL_TEMP, "pUid" => $deviceId, "channelName" => "quickLog", "uid" => $uid));
             $this->userMappingTable->save($userMapping);
-            $response->setContent("your uid is " . $uid);
-            return $response;
+            $theUid = $uid;
         }
-        $response->setContent("your uid is " . $mappingObj->uid);
+        $userToken = new UserToken();
+        $tokenStr = "";
+        $userToken->exchangeArray(array("uid" => $theUid, "token" => $tokenStr, "ttl" => time() + 60 * 60 * 1));
+        $this->userTokenTable->save($userToken);
+        $response->setContent("your uid is " . $theUid . " token is " . $tokenStr);
         return $response;
     }
 

@@ -47,6 +47,16 @@ class Module implements ConfigProviderInterface
                     $resultSetPrototype->setArrayObjectPrototype(new Model\UserMapping());
                     return new TableGateway('userMapping', $dbAdapter, null, $resultSetPrototype);
                 },
+                Model\UserTokenTable::class => function (ServiceManager $container) {
+                    $tableGateway = $container->get(Model\UserTokenTableGateway::class);
+                    return new Model\UserTokenTable($tableGateway);
+                },
+                Model\UserTokenTableGateway::class => function (ServiceManager $container) {
+                    $dbAdapter = $container->get(AdapterInterface::class);
+                    $resultSetPrototype = new ResultSet();
+                    $resultSetPrototype->setArrayObjectPrototype(new Model\UserToken());
+                    return new TableGateway('userToken', $dbAdapter, null, $resultSetPrototype);
+                },
             ],
         ];
     }
@@ -62,7 +72,7 @@ class Module implements ConfigProviderInterface
                 },
                 Controller\UserController::class => function (ServiceManager $container) {
                     return new Controller\UserController(
-                        $container->get(Model\UserTable::class), $container->get(Model\UserMappingTable::class)
+                        $container->get(Model\UserTable::class), $container->get(Model\UserMappingTable::class), $container->get(Model\UserTokenTable::class)
                     );
                 },
             ],
