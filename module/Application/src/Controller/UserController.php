@@ -14,6 +14,7 @@ use Application\Model\User;
 use Application\Model\UserMappingTable;
 use Application\Model\UserTable;
 use Zend\Mvc\Controller\AbstractActionController;
+use Zend\View\Model\ViewModel;
 
 class UserController extends AbstractActionController
 {
@@ -39,28 +40,63 @@ class UserController extends AbstractActionController
         return $response;
     }
 
-    /**
-     * @return array|\Zend\Http\Response
-     */
+
     public function loginAction()
+    {
+        $form = new UserForm();
+        $form->get("submit")->setValue("Login");
+        return ['form' => $form];
+    }
+
+    public function regAction()
+    {
+        $form = new UserForm(true);
+        $form->get("submit")->setValue("REG");
+        return ['form' => $form];
+    }
+
+    public function doLoginAction()
     {
         /**
          * @var \Zend\Http\Request $request
-         * */
+         **/
         $form = new UserForm();
-        $form->get("submit")->setValue("REG");
-
         $request = $this->getRequest();
-        if (!$request->isPost()) {
-            return ['form' => $form];
-        }
 
         $user = new User();
         $form->setInputFilter($user->getInputFilter());
         $form->setData($request->getPost());
 
         if (!$form->isValid()) {
-            return ['form' => $form];
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/login");
+            $viewModel->setVariable("form", $form);
+            return $viewModel;
+        }
+
+        $user->exchangeArray($form->getData());
+        $userObj = $this->userTable->checkUser($form->get('username')->getValue(), $form->get('password')->getValue());
+        var_dump($userObj);
+        return $this->redirect()->toRoute('user');
+    }
+
+    public function doRegAction()
+    {
+        /**
+         * @var \Zend\Http\Request $request
+         **/
+        $form = new UserForm(true);
+        $request = $this->getRequest();
+
+        $user = new User();
+        $form->setInputFilter($user->getInputFilter(true));
+        $form->setData($request->getPost());
+
+        if (!$form->isValid()) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/reg");
+            $viewModel->setVariable("form", $form);
+            return $viewModel;
         }
 
         $user->exchangeArray($form->getData());
@@ -68,7 +104,7 @@ class UserController extends AbstractActionController
         return $this->redirect()->toRoute('user');
     }
 
-    public function doLoginAction()
+    public function doTempLogin()
     {
 
     }

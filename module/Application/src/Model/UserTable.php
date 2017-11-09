@@ -60,6 +60,20 @@ class UserTable
         return $row;
     }
 
+    public function checkUser($username, $password)
+    {
+        $rowSet = $this->tableGateway->select(['username' => $username, 'password' => $password]);
+        $row = $rowSet->current();
+        if (!$row) {
+            throw new RuntimeException(sprintf(
+                'Could not find row with identifier %d',
+                $username
+            ));
+        }
+
+        return $row;
+    }
+
     public function deleteUser($id)
     {
         $this->tableGateway->delete(['id' => (int)$id]);

@@ -16,37 +16,74 @@ class UserForm extends Form
 
     /**
      * UserForm constructor.
+     * @param $isReg boolean
      */
-    public function __construct()
+    public function __construct($isReg = false)
     {
         parent::__construct('user');
 
-        $this->add([
-            'name' => 'id',
-            'type' => 'hidden',
-        ]);
-        $this->add([
-            'name' => 'username',
-            'type' => 'text',
-            'options' => [
-                'label' => 'Username',
-            ],
-        ]);
-        $this->add([
-            'name' => 'telephone',
-            'type' => 'text',
-            'options' => [
-                'label' => 'Telephone',
-            ],
-        ]);
-        $this->add([
-            'name' => 'submit',
-            'type' => 'submit',
-            'attributes' => [
-                'value' => 'Go',
-                'id' => 'submitbutton',
-            ],
-        ]);
+        if ($isReg) {
+            $this->add([
+                'name' => 'id',
+                'type' => 'hidden',
+            ]);
+            $this->add([
+                'name' => 'username',
+                'type' => 'text',
+                'options' => [
+                    'label' => 'Username',
+                ],
+            ]);
+            $this->add([
+                'name' => 'password',
+                'type' => 'password',
+                'options' => [
+                    'label' => 'Password',
+                ],
+            ]);
+            $this->add([
+                'name' => 'passwordAgain',
+                'type' => 'password',
+                'options' => [
+                    'label' => 'Password Again',
+                ],
+            ]);
+            $this->add([
+                'name' => 'submit',
+                'type' => 'submit',
+                'attributes' => [
+                    'value' => 'REG',
+                    'id' => 'submitbutton',
+                ],
+            ]);
+        } else {
+            $this->add([
+                'name' => 'id',
+                'type' => 'hidden',
+            ]);
+            $this->add([
+                'name' => 'username',
+                'type' => 'text',
+                'options' => [
+                    'label' => 'Username',
+                ],
+            ]);
+            $this->add([
+                'name' => 'password',
+                'type' => 'password',
+                'options' => [
+                    'label' => 'Password',
+                ],
+            ]);
+            $this->add([
+                'name' => 'submit',
+                'type' => 'submit',
+                'attributes' => [
+                    'value' => 'Login',
+                    'id' => 'submitbutton',
+                ],
+            ]);
+        }
 
         $this->setAttribute("method", "POST");
     }
