@@ -102,7 +102,7 @@ class UserTable
             'telephone' => $user->telephone,
             'email' => $user->email,
             'status' => $user->status,
-            'channel' => $user->channel,
+            'channelUid' => $user->channelUid,
             'channelId' => $user->channelId,
             'ip' => $user->ip,
             'lastLogin' => $user->lastLogin,

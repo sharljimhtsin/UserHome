@@ -11,6 +11,7 @@ namespace Application\Controller;
 
 use Application\Form\UserForm;
 use Application\Model\User;
+use Application\Model\UserMapping;
 use Application\Model\UserMappingTable;
 use Application\Model\UserTable;
 use Zend\Mvc\Controller\AbstractActionController;
@@ -120,9 +121,33 @@ class UserController extends AbstractActionController
         return $this->redirect()->toRoute('user');
     }
 
-    public function doTempLogin()
+    public function doTempLoginAction()
     {
-
+        /**
+         * @var \Zend\Http\Request $request
+         * @var  \Zend\Http\Response $response
+         **/
+        $request = $this->getRequest();
+        $response = $this->getResponse();
+        $deviceId = $request->getPost("deviceId");
+        if (is_null($deviceId)) {
+            $response->setContent("device Id is empty");
+            return $response;
+        }
+        $mappingObj = $this->userMappingTable->fetchOne($deviceId, UserMapping::CHANNEL_TEMP);
+        if (is_null($mappingObj)) {
+            $uid = "XXXXXXXXXX";
+            $user = new User();
+            $user->exchangeArray(array("channelId" => UserMapping::CHANNEL_TEMP, "channelUid" => $deviceId, "uid" => $uid));
+            $this->userTable->saveUser($user);
+            $userMapping = new UserMapping();
+            $userMapping->exchangeArray(array("channelId" => UserMapping::CHANNEL_TEMP, "pUid" => $deviceId, "channelName" => "quickLog", "uid" => $uid));
+            $this->userMappingTable->save($userMapping);
+            $response->setContent("your uid is " . $uid);
+            return $response;
+        }
+        $response->setContent("your uid is " . $mappingObj["uid"]);
+        return $response;
     }
 
     public function thirdLoginAction()

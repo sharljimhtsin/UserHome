@@ -31,7 +31,7 @@ class User implements InputFilterAwareInterface
     public $telephone;
     public $email;
     public $status;
-    public $channel;
+    public $channelUid;
     public $channelId;
     public $ip;
     public $lastLogin;
@@ -50,7 +50,7 @@ class User implements InputFilterAwareInterface
         $this->telephone = (!empty($data['telephone'])) ? $data['telephone'] : null;
         $this->email = (!empty($data['email'])) ? $data['email'] : null;
         $this->status = (!empty($data['status'])) ? $data['status'] : null;
-        $this->channel = (!empty($data['channel'])) ? $data['channel'] : null;
+        $this->channelUid = (!empty($data['channelUid'])) ? $data['channelUid'] : null;
         $this->channelId = (!empty($data['channelId'])) ? $data['channelId'] : null;
         $this->ip = (!empty($data['ip'])) ? $data['ip'] : null;
         $this->lastLogin = (!empty($data['lastLogin'])) ? $data['lastLogin'] : null;

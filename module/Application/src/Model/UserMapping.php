@@ -16,6 +16,10 @@ use Zend\Mvc\Exception\DomainException;
 
 class UserMapping implements InputFilterAwareInterface
 {
+    // CONST START
+    const CHANNEL_TEMP = -1;
+    const CHANNEL_NO = 0;
+    // CONST END
     public $id;
     public $channelId;
     public $channelName;
