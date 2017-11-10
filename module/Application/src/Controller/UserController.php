@@ -142,9 +142,8 @@ class UserController extends AbstractActionController
             return $response;
         }
         $mappingObj = $this->userMappingTable->fetchOne($deviceId, UserMapping::CHANNEL_TEMP);
-        $theUid = $mappingObj->uid;
         if (is_null($mappingObj)) {
-            $uid = $this->getUniqueUid();
+            $uid = $this->getUniqueUid("U");
             $user = new User();
             $user->exchangeArray(array("channelId" => UserMapping::CHANNEL_TEMP, "channelUid" => $deviceId, "uid" => $uid));
             $this->userTable->saveUser($user);
@@ -152,6 +151,8 @@ class UserController extends AbstractActionController
             $userMapping->exchangeArray(array("channelId" => UserMapping::CHANNEL_TEMP, "pUid" => $deviceId, "channelName" => "quickLog", "uid" => $uid));
             $this->userMappingTable->save($userMapping);
             $theUid = $uid;
+        } else {
+            $theUid = $mappingObj->uid;
         }
         $userToken = new UserToken();
         $tokenStr = $this->getRandomToken();
@@ -166,9 +167,15 @@ class UserController extends AbstractActionController
         return \bin2hex(\random_bytes($size));
     }
 
-    private function getUniqueUid()
+    private function getUniqueUid($prefix)
     {
-
+        $chars = md5(uniqid(mt_rand(), true));
+        $uuid = substr($chars, 0, 8);
+        $uuid .= substr($chars, 8, 4);
+        $uuid .= substr($chars, 12, 4);
+        $uuid .= substr($chars, 16, 4);
+        $uuid .= substr($chars, 20, 12);
+        return $prefix . $uuid;
     }
 
     public function thirdLoginAction()
