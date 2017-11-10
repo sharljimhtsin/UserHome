@@ -178,6 +178,31 @@ class UserController extends AbstractActionController
         return $prefix . $uuid;
     }
 
+    public function checkTokenAction()
+    {
+        /**
+         * @var \Zend\Http\Request $request
+         * @var  \Zend\Http\Response $response
+         * @var UserToken $tokenServer
+         **/
+        $request = $this->getRequest();
+        $response = $this->getResponse();
+        $uid = $request->getPost("uid");
+        $token = $request->getPost("token");
+        if (is_null($uid) || is_null($token)) {
+            $response->setContent("uid or token is empty");
+            return $response;
+        }
+        $tokenServer = $this->userTokenTable->fetchOne($uid);
+        if ($token == $tokenServer->token) {
+            $response->setContent("OK");
+            return $response;
+        } else {
+            $response->setContent("token error");
+            return $response;
+        }
+    }
+
     public function thirdLoginAction()
     {
 
