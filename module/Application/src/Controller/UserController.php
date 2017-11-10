@@ -10,6 +10,7 @@ namespace Application\Controller;
 
 
 use Application\Form\UserForm;
+use Application\Model\SmsCodeTable;
 use Application\Model\User;
 use Application\Model\UserMapping;
 use Application\Model\UserMappingTable;
@@ -17,6 +18,7 @@ use Application\Model\UserTable;
 use Application\Model\UserToken;
 use Application\Model\UserTokenTable;
 use Zend\Mvc\Controller\AbstractActionController;
+use Zend\Session\Container;
 use Zend\View\Model\ViewModel;
 
 class UserController extends AbstractActionController
@@ -27,17 +29,21 @@ class UserController extends AbstractActionController
 
     private $userTokenTable;
 
+    private $smsCodeTable;
+
     /**
      * UserController constructor.
      * @param $userTable
      * @param $userMappingTable
      * @param $userTokenTable
+     * @param $smsCodeTable
      */
-    public function __construct(UserTable $userTable, UserMappingTable $userMappingTable, UserTokenTable $userTokenTable)
+    public function __construct(UserTable $userTable, UserMappingTable $userMappingTable, UserTokenTable $userTokenTable, SmsCodeTable $smsCodeTable)
     {
         $this->userTable = $userTable;
         $this->userMappingTable = $userMappingTable;
         $this->userTokenTable = $userTokenTable;
+        $this->smsCodeTable = $smsCodeTable;
     }
 
     public function indexAction()
@@ -201,6 +207,11 @@ class UserController extends AbstractActionController
             $response->setContent("token error");
             return $response;
         }
+    }
+
+    public function bindTelephoneAction()
+    {
+
     }
 
     public function thirdLoginAction()

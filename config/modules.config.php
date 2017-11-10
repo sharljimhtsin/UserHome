@@ -15,5 +15,6 @@ return [
     'Zend\Validator',
     'Zend\Db',
     'Zend\Form',
+    'Zend\Session',
     'Application',
 ];
