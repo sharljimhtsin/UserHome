@@ -9,7 +9,9 @@
 namespace Application\Controller;
 
 
+use Application\Form\SmsCodeForm;
 use Application\Form\UserForm;
+use Application\Model\SmsCode;
 use Application\Model\SmsCodeTable;
 use Application\Model\User;
 use Application\Model\UserMapping;
@@ -17,6 +19,8 @@ use Application\Model\UserMappingTable;
 use Application\Model\UserTable;
 use Application\Model\UserToken;
 use Application\Model\UserTokenTable;
+use Zend\Http\Request;
+use Zend\Http\Response;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\Session\Container;
 use Zend\View\Model\ViewModel;
@@ -97,6 +101,13 @@ class UserController extends AbstractActionController
             $viewModel->setVariable("error", "username or password error");
             return $viewModel;
         }
+        $tokenStr = $this->getRandomToken();
+        $userTokenObj = new UserToken();
+        $userTokenObj->exchangeArray(array("uid" => $userObj->uid, "token" => $tokenStr, "ttl" => time() + 60 * 60 * 1));
+        $this->userTokenTable->save($userTokenObj);
+        $session = new Container("user");
+        $session->uid = $userObj->uid;
+        $session->token = $tokenStr;
         return $this->redirect()->toRoute('user');
     }
 
@@ -129,6 +140,7 @@ class UserController extends AbstractActionController
         }
 
         $user->exchangeArray($form->getData());
+        $user->uid = $this->getUniqueUid("U");
         $this->userTable->saveUser($user);
         return $this->redirect()->toRoute('user');
     }
@@ -210,6 +222,64 @@ class UserController extends AbstractActionController
     }
 
     public function bindTelephoneAction()
+    {
+        $session = new Container("user");
+        $uid = $session->uid;
+        $token = $session->token;
+        if (is_null($uid) || is_null($token)) {
+            return ["error" => "cookies outdated"];
+        }
+        $tokenServer = $this->userTokenTable->fetchOne($uid);
+        if ($token != $tokenServer->token) {
+            return ["error" => "token error"];
+        }
+        $userObj = $this->userTable->fetchOne($uid);
+        if ($userObj->telephone) {
+            return ["error" => "bind yet"];
+        }
+        $form = new SmsCodeForm();
+        return ["form" => $form];
+    }
+
+    public function sendSmsAction()
+    {
+        /**
+         * @var Request $request
+         * @var Response $response
+         **/
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+        $telephone = $request->getPost("telephone");
+        if (is_null($telephone)) {
+            $response->setContent("telephone error");
+            return $response;
+        }
+        $session = new Container("user");
+        $uid = $session->uid;
+        $token = $session->token;
+        if (is_null($uid) || is_null($token)) {
+            $response->setContent("cookies outdated");
+            return $response;
+        }
+        $tokenServer = $this->userTokenTable->fetchOne($uid);
+        if ($token != $tokenServer->token) {
+            $response->setContent("token error");
+            return $response;
+        }
+        $userObj = $this->userTable->fetchOne($uid);
+        if ($userObj->telephone) {
+            $response->setContent("bind yet");
+            return $response;
+        }
+        $smsCodeStr = rand(1000, 9999);
+        $smsCodeObj = new SmsCode();
+        $smsCodeObj->exchangeArray(array("telephone" => $telephone, "code" => $smsCodeStr, "ttl" => time() + 60));
+        $this->smsCodeTable->save($smsCodeObj);
+        $response->setContent("smsCode sent OK");
+        return $response;
+    }
+
+    public function doBindTelephoneAction()
     {
 
     }

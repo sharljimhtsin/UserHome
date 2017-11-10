@@ -45,6 +45,12 @@ class UserTable
         return $this->tableGateway->select();
     }
 
+    public function fetchOne($uid)
+    {
+        $rowSet = $this->tableGateway->select(['uid' => $uid]);
+        return $rowSet->current();
+    }
+
     public function getUser($id)
     {
         $id = (int)$id;
