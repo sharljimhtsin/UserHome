@@ -144,7 +144,7 @@ class UserController extends AbstractActionController
         $mappingObj = $this->userMappingTable->fetchOne($deviceId, UserMapping::CHANNEL_TEMP);
         $theUid = $mappingObj->uid;
         if (is_null($mappingObj)) {
-            $uid = "XXXXXXXXXX";
+            $uid = $this->getUniqueUid();
             $user = new User();
             $user->exchangeArray(array("channelId" => UserMapping::CHANNEL_TEMP, "channelUid" => $deviceId, "uid" => $uid));
             $this->userTable->saveUser($user);
@@ -154,11 +154,21 @@ class UserController extends AbstractActionController
             $theUid = $uid;
         }
         $userToken = new UserToken();
-        $tokenStr = "";
+        $tokenStr = $this->getRandomToken();
         $userToken->exchangeArray(array("uid" => $theUid, "token" => $tokenStr, "ttl" => time() + 60 * 60 * 1));
         $this->userTokenTable->save($userToken);
         $response->setContent("your uid is " . $theUid . " token is " . $tokenStr);
         return $response;
+    }
+
+    private function getRandomToken($size = 10)
+    {
+        return \bin2hex(\random_bytes($size));
+    }
+
+    private function getUniqueUid()
+    {
+
     }
 
     public function thirdLoginAction()
