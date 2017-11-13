@@ -14,6 +14,25 @@ if (isset($error)) {
     echo $this->form()->openTag($form);
     echo $this->formRow($form->get('telephone'));
     echo $this->formRow($form->get('smsCode'));
+    ?>
+    <a onclick="sendSms()">getSMS</a>
+    <script language="JavaScript">
+        function sendSms() {
+            var telephone = $("input[name=telephone]").val();
+            console.log(telephone);
+            $.ajax({
+                type: "POST",
+                url: "<?php echo $this->url('user', ['action' => 'sendSms']) ?>",
+                data: {"telephone": telephone},
+                success: function (data) {
+                    console.log(data);
+                    alert("OK");
+                },
+                dataType: "text"
+            });
+        }
+    </script>
+    <?php
     echo $this->formSubmit($form->get('submit'));
     echo $this->form()->closeTag();
 }
