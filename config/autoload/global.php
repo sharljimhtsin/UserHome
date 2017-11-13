@@ -21,6 +21,9 @@ return [
             'Zend\Session\Config\ConfigInterface'
             => 'Zend\Session\Service\SessionConfigFactory',
         ),
+        'abstract_factories' => array(
+            'Zend\Db\Adapter\AdapterAbstractServiceFactory',
+        ),
     ),
     'session_config' => [
         'remember_me_seconds' => 60 * 60,
