@@ -9,8 +9,10 @@
 namespace Application\Controller;
 
 
+use Application\Form\ResetPwdForm;
 use Application\Form\SmsCodeForm;
 use Application\Form\UserForm;
+use Application\Model\ResetPwd;
 use Application\Model\SmsCode;
 use Application\Model\SmsCodeTable;
 use Application\Model\User;
@@ -266,11 +268,11 @@ class UserController extends AbstractActionController
             $response->setContent("token error");
             return $response;
         }
-        $userObj = $this->userTable->fetchOne($uid);
-        if ($userObj->telephone) {
-            $response->setContent("bind yet");
-            return $response;
-        }
+//        $userObj = $this->userTable->fetchOne($uid);
+//        if ($userObj->telephone) {
+//            $response->setContent("bind yet");
+//            return $response;
+//        }
         $smsCodeStr = rand(1000, 9999);
         $smsCodeObj = new SmsCode();
         $smsCodeObj->exchangeArray(array("telephone" => $telephone, "code" => $smsCodeStr, "ttl" => time() + 60));
@@ -323,6 +325,13 @@ class UserController extends AbstractActionController
             $viewModel->setVariable("error", "bind yet");
             return $viewModel;
         }
+        if ($this->userTable->isExist("telephone", $telephone)) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/bind-telephone");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "telephone bind yet");
+            return $viewModel;
+        }
         $smsCodeObj = $this->smsCodeTable->fetchOne($telephone);
         if (is_null($smsCodeObj) || $smsCodeStr != $smsCodeObj->code) {
             $viewModel = new ViewModel();
@@ -341,5 +350,88 @@ class UserController extends AbstractActionController
 
     }
 
+    public function resetPasswordAction()
+    {
+        $session = new Container("user");
+        $uid = $session->uid;
+        $token = $session->token;
+        if (is_null($uid) || is_null($token)) {
+            return ["error" => "cookies outdated"];
+        }
+        $tokenServer = $this->userTokenTable->fetchOne($uid);
+        if ($token != $tokenServer->token) {
+            return ["error" => "token error"];
+        }
+        $userObj = $this->userTable->fetchOne($uid);
+        if (is_null($userObj)) {
+            return ["error" => "user not exist"];
+        }
+        if (is_null($userObj->telephone)) {
+            return ["error" => "telephone not exist"];
+        }
+        $form = new ResetPwdForm();
+        return ["form" => $form];
+    }
+
+    public function doResetPasswordAction()
+    {
+        /**
+         * @var Request $request
+         * @var Response $response
+         **/
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+        $form = new ResetPwdForm();
+        $resetPwd = new ResetPwd();
+        $form->setInputFilter($resetPwd->getInputFilter());
+        $form->setData($request->getPost());
+
+        if (!$form->isValid()) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/reset-password");
+            $viewModel->setVariable("form", $form);
+            return $viewModel;
+        }
+        $telephone = $form->get("telephone")->getValue();
+        $smsCodeStr = $form->get("code")->getValue();
+        $password = $form->get("password")->getValue();
+        $session = new Container("user");
+        $uid = $session->uid;
+        $token = $session->token;
+        if (is_null($uid) || is_null($token)) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/reset-password");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "cookies outdated");
+            return $viewModel;
+        }
+        $tokenServer = $this->userTokenTable->fetchOne($uid);
+        if ($token != $tokenServer->token) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/reset-password");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "token error");
+            return $viewModel;
+        }
+        $userObj = $this->userTable->fetchOne($uid);
+        if ($userObj->telephone != $telephone) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/reset-password");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "telephone not match");
+            return $viewModel;
+        }
+        $smsCodeObj = $this->smsCodeTable->fetchOne($telephone);
+        if (is_null($smsCodeObj) || $smsCodeStr != $smsCodeObj->code) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/reset-password");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("validError", "smsCode error");
+            return $viewModel;
+        }
+        $userObj->password = $password;
+        $this->userTable->saveUser($userObj);
+        return $this->redirect()->toRoute('user');
+    }
 
 }
