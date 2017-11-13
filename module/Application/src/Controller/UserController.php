@@ -250,7 +250,7 @@ class UserController extends AbstractActionController
         $response = $this->getResponse();
         $request = $this->getRequest();
         $telephone = $request->getPost("telephone");
-        if (is_null($telephone)) {
+        if (is_null($telephone) || empty($telephone)) {
             $response->setContent("telephone error");
             return $response;
         }
@@ -289,31 +289,47 @@ class UserController extends AbstractActionController
         $request = $this->getRequest();
         $telephone = $request->getPost("telephone");
         $smsCodeStr = $request->getPost("smsCode");
-        if (is_null($telephone)) {
-            $response->setContent("telephone error");
-            return $response;
+        $form = new SmsCodeForm();
+        if (is_null($telephone) || empty($telephone)) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/bind-telephone");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("validError", "telephone error");
+            return $viewModel;
         }
         $session = new Container("user");
         $uid = $session->uid;
         $token = $session->token;
         if (is_null($uid) || is_null($token)) {
-            $response->setContent("cookies outdated");
-            return $response;
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/bind-telephone");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "cookies outdated");
+            return $viewModel;
         }
         $tokenServer = $this->userTokenTable->fetchOne($uid);
         if ($token != $tokenServer->token) {
-            $response->setContent("token error");
-            return $response;
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/bind-telephone");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "token error");
+            return $viewModel;
         }
         $userObj = $this->userTable->fetchOne($uid);
         if ($userObj->telephone) {
-            $response->setContent("bind yet");
-            return $response;
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/bind-telephone");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "bind yet");
+            return $viewModel;
         }
         $smsCodeObj = $this->smsCodeTable->fetchOne($telephone);
         if (is_null($smsCodeObj) || $smsCodeStr != $smsCodeObj->code) {
-            $response->setContent("smsCode error");
-            return $response;
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/bind-telephone");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("validError", "smsCode error");
+            return $viewModel;
         }
         $userObj->telephone = $telephone;
         $this->userTable->saveUser($userObj);

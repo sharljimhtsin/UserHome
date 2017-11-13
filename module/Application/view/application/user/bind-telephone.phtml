@@ -35,4 +35,5 @@ if (isset($error)) {
     <?php
     echo $this->formSubmit($form->get('submit'));
     echo $this->form()->closeTag();
+    echo isset($validError) ? $validError : "";
 }
