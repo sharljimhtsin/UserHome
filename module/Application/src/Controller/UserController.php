@@ -281,7 +281,43 @@ class UserController extends AbstractActionController
 
     public function doBindTelephoneAction()
     {
-
+        /**
+         * @var Request $request
+         * @var Response $response
+         **/
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+        $telephone = $request->getPost("telephone");
+        $smsCodeStr = $request->getPost("smsCode");
+        if (is_null($telephone)) {
+            $response->setContent("telephone error");
+            return $response;
+        }
+        $session = new Container("user");
+        $uid = $session->uid;
+        $token = $session->token;
+        if (is_null($uid) || is_null($token)) {
+            $response->setContent("cookies outdated");
+            return $response;
+        }
+        $tokenServer = $this->userTokenTable->fetchOne($uid);
+        if ($token != $tokenServer->token) {
+            $response->setContent("token error");
+            return $response;
+        }
+        $userObj = $this->userTable->fetchOne($uid);
+        if ($userObj->telephone) {
+            $response->setContent("bind yet");
+            return $response;
+        }
+        $smsCodeObj = $this->smsCodeTable->fetchOne($telephone);
+        if (is_null($smsCodeObj) || $smsCodeStr != $smsCodeObj->code) {
+            $response->setContent("smsCode error");
+            return $response;
+        }
+        $userObj->telephone = $telephone;
+        $this->userTable->saveUser($userObj);
+        return $this->redirect()->toRoute('user');
     }
 
     public function thirdLoginAction()

@@ -23,8 +23,8 @@ return [
         ),
     ),
     'session_config' => [
-        'remember_me_seconds' => 60,
-        'cookie_lifetime' => 60,
+        'remember_me_seconds' => 60 * 60,
+        'cookie_lifetime' => 60 * 60,
     ],
     'session_manager' => [
         'config' => [
