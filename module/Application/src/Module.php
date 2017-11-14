@@ -25,6 +25,8 @@ class Module implements ConfigProviderInterface
 {
     const VERSION = '3.0.3-dev';
 
+    const DB_LIST = ["db1", "db2"];
+
     public function getConfig()
     {
         return include __DIR__ . '/../config/module.config.php';
@@ -35,14 +37,19 @@ class Module implements ConfigProviderInterface
         return [
             'factories' => [
                 Model\UserTable::class => function (ServiceManager $container) {
-                    $tableGateway = $container->get(Model\UserTableGateway::class);
-                    return new Model\UserTable($tableGateway);
-                },
-                Model\UserTableGateway::class => function (ServiceManager $container) {
                     $dbAdapter = $container->get(AdapterInterface::class);
                     $resultSetPrototype = new ResultSet();
                     $resultSetPrototype->setArrayObjectPrototype(new Model\User());
-                    return new TableGateway('user', $dbAdapter, null, $resultSetPrototype);
+                    $tableGateway = new TableGateway('user', $dbAdapter, null, $resultSetPrototype);
+                    $tableGatewayList = array("default" => $tableGateway);
+                    foreach (Module::DB_LIST as $db) {
+                        $dbAdapter = $container->get($db);
+                        $resultSetPrototype = new ResultSet();
+                        $resultSetPrototype->setArrayObjectPrototype(new Model\User());
+                        $tableGatewayTmp = new TableGateway('user', $dbAdapter, null, $resultSetPrototype);
+                        $tableGatewayList[$db] = $tableGatewayTmp;
+                    }
+                    return new Model\UserTable($tableGateway, $tableGatewayList);
                 },
                 Model\UserMappingTable::class => function (ServiceManager $container) {
                     $tableGateway = $container->get(Model\UserMappingTableGateway::class);

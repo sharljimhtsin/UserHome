@@ -52,6 +52,22 @@ class UserController extends AbstractActionController
         $this->smsCodeTable = $smsCodeTable;
     }
 
+    public function switchDb($db = "default")
+    {
+        if (method_exists($this->userTable, "switchTableGatewayByDb")) {
+            $this->userTable->switchTableGatewayByDb($db);
+        }
+        if (method_exists($this->userMappingTable, "switchTableGatewayByDb")) {
+            $this->userMappingTable->switchTableGatewayByDb($db);
+        }
+        if (method_exists($this->userTokenTable, "switchTableGatewayByDb")) {
+            $this->userTokenTable->switchTableGatewayByDb($db);
+        }
+        if (method_exists($this->smsCodeTable, "switchTableGatewayByDb")) {
+            $this->smsCodeTable->switchTableGatewayByDb($db);
+        }
+    }
+
     public function indexAction()
     {
         $response = $this->getResponse();
@@ -132,6 +148,7 @@ class UserController extends AbstractActionController
             return $viewModel;
         }
 
+        $this->switchDb();
         $isExist = $this->userTable->isExist("username", $form->get("username")->getValue());
         if ($isExist) {
             $viewModel = new ViewModel();
