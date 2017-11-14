@@ -52,34 +52,49 @@ class Module implements ConfigProviderInterface
                     return new Model\UserTable($tableGateway, $tableGatewayList);
                 },
                 Model\UserMappingTable::class => function (ServiceManager $container) {
-                    $tableGateway = $container->get(Model\UserMappingTableGateway::class);
-                    return new Model\UserMappingTable($tableGateway);
-                },
-                Model\UserMappingTableGateway::class => function (ServiceManager $container) {
                     $dbAdapter = $container->get(AdapterInterface::class);
                     $resultSetPrototype = new ResultSet();
                     $resultSetPrototype->setArrayObjectPrototype(new Model\UserMapping());
-                    return new TableGateway('userMapping', $dbAdapter, null, $resultSetPrototype);
+                    $tableGateway = new TableGateway('userMapping', $dbAdapter, null, $resultSetPrototype);
+                    $tableGatewayList = array("default" => $tableGateway);
+                    foreach (Module::DB_LIST as $db) {
+                        $dbAdapter = $container->get($db);
+                        $resultSetPrototype = new ResultSet();
+                        $resultSetPrototype->setArrayObjectPrototype(new Model\UserMapping());
+                        $tableGatewayTmp = new TableGateway('userMapping', $dbAdapter, null, $resultSetPrototype);
+                        $tableGatewayList[$db] = $tableGatewayTmp;
+                    }
+                    return new Model\UserMappingTable($tableGateway, $tableGatewayList);
                 },
                 Model\UserTokenTable::class => function (ServiceManager $container) {
-                    $tableGateway = $container->get(Model\UserTokenTableGateway::class);
-                    return new Model\UserTokenTable($tableGateway);
-                },
-                Model\UserTokenTableGateway::class => function (ServiceManager $container) {
                     $dbAdapter = $container->get(AdapterInterface::class);
                     $resultSetPrototype = new ResultSet();
                     $resultSetPrototype->setArrayObjectPrototype(new Model\UserToken());
-                    return new TableGateway('userToken', $dbAdapter, null, $resultSetPrototype);
+                    $tableGateway = new TableGateway('userToken', $dbAdapter, null, $resultSetPrototype);
+                    $tableGatewayList = array("default" => $tableGateway);
+                    foreach (Module::DB_LIST as $db) {
+                        $dbAdapter = $container->get($db);
+                        $resultSetPrototype = new ResultSet();
+                        $resultSetPrototype->setArrayObjectPrototype(new Model\UserToken());
+                        $tableGatewayTmp = new TableGateway('userToken', $dbAdapter, null, $resultSetPrototype);
+                        $tableGatewayList[$db] = $tableGatewayTmp;
+                    }
+                    return new Model\UserTokenTable($tableGateway, $tableGatewayList);
                 },
                 Model\SmsCodeTable::class => function (ServiceManager $container) {
-                    $tableGateway = $container->get(Model\SmsCodeTableGateway::class);
-                    return new Model\SmsCodeTable($tableGateway);
-                },
-                Model\SmsCodeTableGateway::class => function (ServiceManager $container) {
                     $dbAdapter = $container->get(AdapterInterface::class);
                     $resultSetPrototype = new ResultSet();
                     $resultSetPrototype->setArrayObjectPrototype(new Model\SmsCode());
-                    return new TableGateway('smsCode', $dbAdapter, null, $resultSetPrototype);
+                    $tableGateway = new TableGateway('smsCode', $dbAdapter, null, $resultSetPrototype);
+                    $tableGatewayList = array("default" => $tableGateway);
+                    foreach (Module::DB_LIST as $db) {
+                        $dbAdapter = $container->get($db);
+                        $resultSetPrototype = new ResultSet();
+                        $resultSetPrototype->setArrayObjectPrototype(new Model\SmsCode());
+                        $tableGatewayTmp = new TableGateway('smsCode', $dbAdapter, null, $resultSetPrototype);
+                        $tableGatewayList[$db] = $tableGatewayTmp;
+                    }
+                    return new Model\SmsCodeTable($tableGateway, $tableGatewayList);
                 },
                 SessionManager::class => function (ServiceManager $container) {
                     $config = $container->get('config');

@@ -12,17 +12,22 @@ namespace Application\Model;
 use Zend\Db\Exception\RuntimeException;
 use Zend\Db\TableGateway\TableGatewayInterface;
 
-class UserMappingTable
+class UserMappingTable implements MultiDbInterface
 {
     protected $tableGateway;
+
+    protected $tableGatewayList;
+
 
     /**
      * UserMappingTable constructor.
      * @param $tableGateway
+     * @param $tableGatewayList
      */
-    public function __construct(TableGatewayInterface $tableGateway)
+    public function __construct(TableGatewayInterface $tableGateway, Array $tableGatewayList)
     {
         $this->tableGateway = $tableGateway;
+        $this->tableGatewayList = $tableGatewayList;
     }
 
     /**
@@ -39,6 +44,35 @@ class UserMappingTable
     public function setTableGateway($tableGateway)
     {
         $this->tableGateway = $tableGateway;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTableGatewayList()
+    {
+        return $this->tableGatewayList;
+    }
+
+    /**
+     * @param mixed $tableGatewayList
+     */
+    public function setTableGatewayList($tableGatewayList)
+    {
+        $this->tableGatewayList = $tableGatewayList;
+    }
+
+    /**
+     * @param $db
+     * @return mixed
+     */
+    public function switchTableGatewayByDb($db)
+    {
+        if (array_key_exists($db, $this->tableGatewayList)) {
+            $this->tableGateway = $this->tableGatewayList[$db];
+            return true;
+        }
+        return false;
     }
 
     public function fetchAll()
