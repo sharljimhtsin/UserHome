@@ -9,9 +9,11 @@
 namespace Application\Controller;
 
 
+use Application\Form\ChangePwdForm;
 use Application\Form\ResetPwdForm;
 use Application\Form\SmsCodeForm;
 use Application\Form\UserForm;
+use Application\Model\ChangePwd;
 use Application\Model\ResetPwd;
 use Application\Model\SmsCode;
 use Application\Model\SmsCodeTable;
@@ -447,6 +449,78 @@ class UserController extends AbstractActionController
             return $viewModel;
         }
         $userObj->password = $password;
+        $this->userTable->saveUser($userObj);
+        return $this->redirect()->toRoute('user');
+    }
+
+    public function changePasswordAction()
+    {
+        $session = new Container("user");
+        $uid = $session->uid;
+        $token = $session->token;
+        if (is_null($uid) || is_null($token)) {
+            return ["error" => "cookies outdated"];
+        }
+        $tokenServer = $this->userTokenTable->fetchOne($uid);
+        if ($token != $tokenServer->token) {
+            return ["error" => "token error"];
+        }
+        $userObj = $this->userTable->fetchOne($uid);
+        if (is_null($userObj)) {
+            return ["error" => "user not exist"];
+        }
+        $form = new ChangePwdForm();
+        return ["form" => $form];
+    }
+
+    public function doChangePasswordAction()
+    {
+        /**
+         * @var Request $request
+         * @var Response $response
+         **/
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+        $form = new ChangePwdForm();
+        $changePwd = new ChangePwd();
+        $form->setInputFilter($changePwd->getInputFilter());
+        $form->setData($request->getPost());
+
+        if (!$form->isValid()) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/change-password");
+            $viewModel->setVariable("form", $form);
+            return $viewModel;
+        }
+        $oldPassword = $form->get("oldPassword")->getValue();
+        $newPassword = $form->get("newPassword")->getValue();
+        $session = new Container("user");
+        $uid = $session->uid;
+        $token = $session->token;
+        if (is_null($uid) || is_null($token)) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/change-password");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "cookies outdated");
+            return $viewModel;
+        }
+        $tokenServer = $this->userTokenTable->fetchOne($uid);
+        if ($token != $tokenServer->token) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/change-password");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("error", "token error");
+            return $viewModel;
+        }
+        $userObj = $this->userTable->fetchOne($uid);
+        if ($userObj->password != md5($oldPassword)) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/change-password");
+            $viewModel->setVariable("form", $form);
+            $viewModel->setVariable("validError", "password not match");
+            return $viewModel;
+        }
+        $userObj->password = $newPassword;
         $this->userTable->saveUser($userObj);
         return $this->redirect()->toRoute('user');
     }
