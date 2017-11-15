@@ -57,6 +57,12 @@ class User implements InputFilterAwareInterface
         $this->createTime = (!empty($data['createTime'])) ? $data['createTime'] : null;
     }
 
+    public function getAsArray()
+    {
+        $object = json_decode(json_encode($this), true);
+        return $object;
+    }
+
     private $inputFilter;
 
     /**

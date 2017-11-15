@@ -7,6 +7,7 @@
 
 namespace Application;
 
+use Application\Form\Telephone;
 use Zend\Router\Http\Literal;
 use Zend\Router\Http\Segment;
 use Zend\ServiceManager\Factory\InvokableFactory;
@@ -74,6 +75,12 @@ return [
     'controllers' => [
         'factories' => [
             Controller\TestController::class => InvokableFactory::class,
+        ],
+    ],
+    'form_elements' => [
+        'aliases' => [
+            'phone' => Telephone::class,
+            'telephone' => Telephone::class,
         ],
     ],
     'view_manager' => [

@@ -1,0 +1,37 @@
+<?php
+
+$title = 'info';
+$this->headTitle($title);
+?>
+    <h1><?= $this->escapeHtml($title) ?></h1>
+<?php
+if (isset($error)) {
+    die($error);
+}
+$form->setAttribute('action', $this->url('user', ['action' => 'doEditUser']));
+$form->prepare();
+
+echo $this->form()->openTag($form);
+echo $this->formRow($form->get('username'));
+echo "<br/>";
+echo $this->formRow($form->get('nickname'));
+echo "<br/>";
+echo $this->formRow($form->get('sex'));
+echo "<br/>";
+echo $this->formRow($form->get('signature'));
+echo "<br/>";
+//echo $this->formRow($form->get('telephone'));
+echo "<br/>";
+echo $this->formRow($form->get('email'));
+echo "<br/>";
+echo $this->formRow($form->get('status'));
+echo "<br/>";
+echo $this->formRow($form->get('channelUid'));
+echo "<br/>";
+echo $this->formRow($form->get('channelId'));
+echo "<br/>";
+echo $this->formRow($form->get('ip'));
+echo "<br/>";
+echo $this->formSubmit($form->get('submit'));
+echo $this->form()->closeTag();
+echo isset($error) ? $error : "";

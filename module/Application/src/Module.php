@@ -7,10 +7,14 @@
 
 namespace Application;
 
+use Application\Form\Telephone;
+use Application\Form\UserInfoForm;
+use Interop\Container\ContainerInterface;
 use Zend\Db\Adapter\AdapterInterface;
 use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
+use Zend\ModuleManager\Feature\FormElementProviderInterface;
 use Zend\Mvc\ModuleRouteListener;
 use Zend\Mvc\MvcEvent;
 use Zend\Mvc\Service\RequestFactory;
@@ -21,7 +25,7 @@ use Zend\Session\SessionManager;
 use Zend\Session\Validator;
 
 
-class Module implements ConfigProviderInterface
+class Module implements ConfigProviderInterface, FormElementProviderInterface
 {
     const VERSION = '3.0.3-dev';
 
@@ -95,6 +99,10 @@ class Module implements ConfigProviderInterface
                         $tableGatewayList[$db] = $tableGatewayTmp;
                     }
                     return new Model\SmsCodeTable($tableGateway, $tableGatewayList);
+                },
+                UserInfoForm::class => function (ContainerInterface $container) {
+                    $formManager = $container->get('FormElementManager');
+                    return $formManager->get(UserInfoForm::class);
                 },
                 SessionManager::class => function (ServiceManager $container) {
                     $config = $container->get('config');
@@ -220,9 +228,25 @@ class Module implements ConfigProviderInterface
                 },
                 Controller\UserController::class => function (ServiceManager $container) {
                     return new Controller\UserController(
-                        $container->get(Model\UserTable::class), $container->get(Model\UserMappingTable::class), $container->get(Model\UserTokenTable::class), $container->get(Model\SmsCodeTable::class)
+                        $container->get(Model\UserTable::class), $container->get(Model\UserMappingTable::class), $container->get(Model\UserTokenTable::class), $container->get(Model\SmsCodeTable::class), $container->get(UserInfoForm::class)
                     );
                 },
+            ],
+        ];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFormElementConfig()
+    {
+        return [
+            'aliases' => [
+                'phone' => Telephone::class,
+                'telephone' => Telephone::class,
+            ],
+            'factories' => [
+
             ],
         ];
     }

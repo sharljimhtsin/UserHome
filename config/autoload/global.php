@@ -45,4 +45,24 @@ return [
     'session_storage' => [
         'type' => Session\Storage\SessionArrayStorage::class,
     ],
+    'db' => array(
+        'driver' => 'Pdo',
+        'dsn' => 'mysql:dbname=userHome;host=localhost',
+        'username' => 'root',
+        'password' => 'root',
+        'adapters' => array(
+            'db1' => array(
+                'driver' => 'Pdo',
+                'dsn' => 'mysql:dbname=userHome1;host=localhost',
+                'username' => 'root',
+                'password' => 'root',
+            ),
+            'db2' => array(
+                'driver' => 'Pdo',
+                'dsn' => 'mysql:dbname=userHome2;host=localhost',
+                'username' => 'root',
+                'password' => 'root',
+            ),
+        )
+    ),
 ];

@@ -13,6 +13,7 @@ use Application\Form\ChangePwdForm;
 use Application\Form\ResetPwdForm;
 use Application\Form\SmsCodeForm;
 use Application\Form\UserForm;
+use Application\Form\UserInfoForm;
 use Application\Model\ChangePwd;
 use Application\Model\ResetPwd;
 use Application\Model\SmsCode;
@@ -39,19 +40,23 @@ class UserController extends AbstractActionController
 
     private $smsCodeTable;
 
+    private $userInfoForm;
+
     /**
      * UserController constructor.
      * @param $userTable
      * @param $userMappingTable
      * @param $userTokenTable
      * @param $smsCodeTable
+     * @param $userInfoForm
      */
-    public function __construct(UserTable $userTable, UserMappingTable $userMappingTable, UserTokenTable $userTokenTable, SmsCodeTable $smsCodeTable)
+    public function __construct(UserTable $userTable, UserMappingTable $userMappingTable, UserTokenTable $userTokenTable, SmsCodeTable $smsCodeTable, UserInfoForm $userInfoForm)
     {
         $this->userTable = $userTable;
         $this->userMappingTable = $userMappingTable;
         $this->userTokenTable = $userTokenTable;
         $this->smsCodeTable = $smsCodeTable;
+        $this->userInfoForm = $userInfoForm;
     }
 
     public function switchDb($db = "default")
@@ -523,6 +528,50 @@ class UserController extends AbstractActionController
         $userObj->password = $newPassword;
         $this->userTable->saveUser($userObj);
         return $this->redirect()->toRoute('user');
+    }
+
+    public function UserInfoAction()
+    {
+        /**
+         * @var User $userObj
+         **/
+        $session = new Container("user");
+        $uid = $session->uid;
+        $token = $session->token;
+        if (is_null($uid) || is_null($token)) {
+            return ["error" => "cookies outdated"];
+        }
+        $tokenServer = $this->userTokenTable->fetchOne($uid);
+        if ($token != $tokenServer->token) {
+            return ["error" => "token error"];
+        }
+        $userObj = $this->userTable->fetchOne($uid);
+        if (is_null($userObj)) {
+            return ["error" => "user not exist"];
+        }
+        $form = new UserInfoForm();
+        $form->setData($userObj->getAsArray());
+        return ["form" => $form];
+    }
+
+    public function doEditUserInfo()
+    {
+        /**
+         * @var Request $request
+         * @var Response $response
+         **/
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+        $form = new UserInfoForm();
+        $form->setUseInputFilterDefaults(true);
+        $form->setData($request->getPost());
+
+        if (!$form->isValid()) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate("application/user/user-info");
+            $viewModel->setVariable("form", $form);
+            return $viewModel;
+        }
     }
 
 }
